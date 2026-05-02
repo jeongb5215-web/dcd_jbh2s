@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DcD — Drone & Counter-Drone Intelligence Platform</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#080b10;--bg2:#0e1520;--bg3:#141d2e;
+    --border:rgba(80,140,220,0.18);--border2:rgba(80,160,255,0.4);
+    --accent:#4fa3ff;--accent2:#ff5555;--accent3:#33e89a;--yellow:#f5b400;--purple:#a78bfa;
+    --text-primary:#ffffff;--text-secondary:#c8d8f0;--text-muted:#7a9cc4;--text-dim:#4a6a8a;
+    --font-head:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic','맑은 고딕',sans-serif;
+    --font-body:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic','맑은 고딕',sans-serif;
+    --font-code:'Courier New',monospace;
+  }
+  html,body{min-height:100vh;background:var(--bg);color:var(--text-primary);}
+  .screen{display:none;min-height:100vh;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* ===== LANDING ===== */
+  #screen-landing{background:var(--bg);align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:100vh;}
+  .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(79,163,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(79,163,255,0.06) 1px,transparent 1px);background-size:44px 44px;}
+  .scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(79,163,255,0.6) 40%,rgba(79,163,255,0.6) 60%,transparent 100%);animation:scan 5s linear infinite;}
+  @keyframes scan{from{top:-1px}to{top:100%}}
+  .landing-inner{position:relative;max-width:700px;padding:2.5rem 2rem;width:100%;}
+  .dcd-eyebrow{font-family:var(--font-code);font-size:10px;letter-spacing:6px;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .dcd-eyebrow::before{content:'';display:block;width:28px;height:1px;background:var(--accent);}
+  .dcd-logo{font-family:var(--font-head);font-size:86px;font-weight:900;color:#fff;line-height:0.9;margin-bottom:8px;letter-spacing:-2px;}
+  .dcd-logo .small-d{font-size:58px;color:var(--accent);vertical-align:baseline;}
+  .dcd-tagline{font-family:var(--font-head);font-size:13px;font-weight:400;color:var(--text-secondary);letter-spacing:3px;margin-bottom:28px;text-transform:uppercase;}
+  .drone-img-row{display:flex;gap:10px;margin-bottom:28px;}
+  .drone-img-card{flex:1;height:90px;overflow:hidden;border:1px solid var(--border2);position:relative;background:#080b10;}
+  .drone-img-card svg{width:100%;height:100%;display:block;}
+  .drone-img-label{position:absolute;bottom:5px;left:8px;font-family:var(--font-code);font-size:8px;letter-spacing:2px;color:rgba(79,163,255,0.9);z-index:2;text-transform:uppercase;}
+  .landing-divider{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+  .landing-divider::before,.landing-divider::after{content:'';flex:1 1 0;min-width:0;height:1px;background:var(--border2);}
+  .landing-divider span{font-family:var(--font-code);font-size:9px;color:var(--accent);letter-spacing:4px;white-space:nowrap;}
+  .btn-primary{background:var(--accent);border:none;color:#000;font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:2px;padding:14px 36px;cursor:pointer;transition:all .18s;margin-right:10px;margin-bottom:8px;}
+  .btn-primary:hover{background:#6fb8ff;}
+  .btn-secondary{background:transparent;border:1px solid var(--text-muted);color:var(--text-secondary);font-family:var(--font-head);font-size:13px;font-weight:500;letter-spacing:1px;padding:13px 28px;cursor:pointer;transition:all .18s;margin-bottom:8px;}
+  .btn-secondary:hover{border-color:#fff;color:#fff;}
+  .jbh2s-label{margin-top:20px;font-family:var(--font-code);font-size:12px;letter-spacing:3px;color:rgba(79,163,255,0.6);}
+  .jbh2s-label span{color:rgba(79,163,255,0.9);font-weight:700;}
+  .drone-bg-wrap{position:absolute;right:0;top:0;bottom:0;width:50%;overflow:hidden;pointer-events:none;}
+  .fade-left{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,11,16,1) 0%,rgba(8,11,16,0.3) 50%,rgba(8,11,16,0) 100%);}
+  .drone-label{position:absolute;right:20px;bottom:28px;font-family:var(--font-code);font-size:9px;color:rgba(79,163,255,0.55);letter-spacing:3px;text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);}
+
+  /* ===== REGISTER / LOGIN / PENDING ===== */
+  #screen-register,#screen-login,#screen-pending{background:var(--bg);align-items:center;justify-content:center;padding:2rem;}
+  .reg-card{background:var(--bg2);border:1px solid var(--border2);max-width:480px;width:100%;padding:40px;position:relative;}
+  .reg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),rgba(79,163,255,0));}
+  .reg-title{font-family:var(--font-head);font-size:11px;font-weight:400;letter-spacing:5px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;}
+  .reg-subtitle{font-family:var(--font-head);font-size:22px;font-weight:700;color:#fff;margin-bottom:10px;}
+  .reg-desc{font-family:var(--font-body);font-size:13px;color:var(--text-muted);margin-bottom:28px;line-height:1.7;}
+  .form-label{display:block;font-family:var(--font-head);font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-secondary);margin-bottom:6px;}
+  .form-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:#fff;font-family:var(--font-body);font-size:14px;padding:11px 14px;outline:none;margin-bottom:18px;transition:border-color .2s;}
+  .form-input:focus{border-color:var(--accent);}
+  .form-input option{background:var(--bg3);}
+  .form-row{display:flex;gap:12px;}
+  .form-row .form-group{flex:1;}
+  .form-note{font-family:var(--font-body);font-size:11px;color:var(--text-muted);margin-bottom:24px;padding:12px 14px;border:1px solid var(--border);background:rgba(79,163,255,0.04);line-height:1.7;}
+  .member-bar{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+  .member-bar-track{flex:1;height:3px;background:var(--bg3);border:1px solid var(--border);}
+  .member-bar-fill{height:100%;background:var(--accent);width:1.5%;}
+  .member-count{font-family:var(--font-head);font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  #screen-pending{text-align:center;}
+  .pending-title{font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:4px;color:var(--yellow);text-transform:uppercase;margin-bottom:14px;}
+  .pending-text{font-family:var(--font-body);font-size:15px;color:var(--text-secondary);max-width:380px;line-height:1.8;}
+
+  /* ===== MAIN APP ===== */
+  #screen-app{background:var(--bg);flex-direction:column;min-height:100vh;}
+  .topbar{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 20px;display:flex;align-items:center;height:54px;gap:4px;flex-shrink:0;overflow-x:auto;}
+  .topbar-logo{font-family:var(--font-head);font-size:20px;font-weight:900;color:#fff;margin-right:16px;letter-spacing:-1px;white-space:nowrap;}
+  .topbar-logo .accent-d{color:var(--accent);}
+  .topbar-divider{width:1px;height:28px;background:var(--border);margin-right:8px;flex-shrink:0;}
+  .nav-tab{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--text-muted);padding:6px 14px;cursor:pointer;border:1px solid transparent;transition:all .15s;background:none;border-radius:2px;letter-spacing:1px;white-space:nowrap;}
+  .nav-tab:hover{color:var(--text-secondary);border-color:var(--border);}
+  .nav-tab.active{color:#fff;border-color:var(--accent);background:rgba(79,163,255,0.1);}
+  .nav-tab.admin-tab{color:rgba(255,85,85,0.7);}
+  .nav-tab.admin-tab.active{color:#fff;border-color:var(--accent2);background:rgba(255,85,85,0.1);}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .user-badge{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:1px;white-space:nowrap;}
+  .logout-btn{font-family:var(--font-head);font-size:11px;color:var(--text-muted);border:1px solid var(--border);background:none;padding:5px 12px;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap;}
+  .logout-btn:hover{color:var(--accent2);border-color:var(--accent2);}
+  .app-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+  .panel{display:none;padding:28px 24px;flex:1;flex-direction:column;}
+  .panel.active{display:flex;}
+  .panel-header{margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:16px;}
+  .panel-tag{font-family:var(--font-head);font-size:11px;font-weight:400;letter-spacing:4px;color:var(--accent);margin-bottom:6px;text-transform:uppercase;}
+  .panel-title{font-family:var(--font-head);font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;}
+
+  /* ===== TRANSLATE BAR ===== */
+  .translate-bar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .translate-label{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--text-muted);}
+  .translate-btn{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--text-muted);border:1px solid var(--border);background:none;padding:5px 14px;cursor:pointer;transition:all .15s;}
+  .translate-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(79,163,255,0.08);}
+  .translate-status{font-family:var(--font-code);font-size:10px;color:var(--text-dim);margin-left:4px;}
+
+  /* ===== ARTICLE LIST ===== */
+  .article-list{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .article-item{background:var(--bg2);border:1px solid var(--border);transition:border-color .15s;overflow:hidden;}
+  .article-item:hover{border-color:var(--border2);}
+  .article-item.expanded{border-color:var(--border2);}
+  .article-header{display:flex;align-items:center;padding:16px 20px;cursor:pointer;gap:14px;user-select:none;flex-wrap:wrap;}
+  .article-badge{display:inline-block;font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 9px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+  .badge-drone{background:rgba(79,163,255,0.12);color:var(--accent);border:1px solid rgba(79,163,255,0.35);}
+  .badge-cdrone{background:rgba(255,85,85,0.12);color:var(--accent2);border:1px solid rgba(255,85,85,0.35);}
+  .badge-tactics{background:rgba(51,232,154,0.12);color:var(--accent3);border:1px solid rgba(51,232,154,0.35);}
+  .badge-analysis{background:rgba(167,139,250,0.12);color:var(--purple);border:1px solid rgba(167,139,250,0.35);}
+  .badge-other{background:rgba(245,180,0,0.12);color:var(--yellow);border:1px solid rgba(245,180,0,0.35);}
+  .article-title-txt{font-family:var(--font-head);font-size:15px;font-weight:700;color:#fff;flex:1;line-height:1.4;min-width:0;}
+  .article-source{font-family:var(--font-head);font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .article-date{font-family:var(--font-head);font-size:11px;color:var(--text-dim);white-space:nowrap;}
+  .expand-arrow{font-size:12px;color:var(--text-dim);transition:transform .25s;width:16px;text-align:center;flex-shrink:0;}
+  .article-item.expanded .expand-arrow{transform:rotate(180deg);color:var(--accent);}
+  .article-body{display:none;border-top:1px solid var(--border);}
+  .article-item.expanded .article-body{display:block;}
+
+  /* 이미지 + 텍스트 레이아웃 */
+  .article-body-inner{display:flex;gap:0;}
+  .article-body-img{width:220px;flex-shrink:0;overflow:hidden;background:var(--bg3);}
+  .article-body-img img{width:100%;height:100%;object-fit:cover;display:block;opacity:0.88;}
+  .article-body-img .no-img{width:100%;height:100%;min-height:140px;display:flex;align-items:center;justify-content:center;font-family:var(--font-code);font-size:9px;color:var(--text-dim);letter-spacing:2px;}
+  .article-body-main{flex:1;padding:18px 20px 18px;}
+  .article-body-text{font-family:var(--font-body);font-size:14px;color:var(--text-secondary);line-height:1.85;margin-bottom:14px;}
+  .article-source-url{font-family:var(--font-code);font-size:10px;color:var(--accent);margin-bottom:14px;display:block;word-break:break-all;}
+  .article-source-url:hover{text-decoration:underline;}
+  .article-body-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .action-btn{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--text-muted);border:1px solid var(--border);background:none;padding:6px 14px;cursor:pointer;transition:all .15s;}
+  .action-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .action-btn.danger:hover{color:var(--accent2);border-color:var(--accent2);}
+  .action-btn.active-translate{color:var(--accent3);border-color:var(--accent3);}
+
+  /* 첨부파일 */
+  .attachments-area{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .attachments-label{font-family:var(--font-code);font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;}
+  .attachment-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .attachment-chip{font-family:var(--font-head);font-size:11px;color:var(--text-muted);background:var(--bg3);border:1px solid var(--border);padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;text-decoration:none;transition:border-color .15s;}
+  .attachment-chip:hover{border-color:var(--accent);color:var(--accent);}
+
+  .source-footer{margin-top:28px;padding:16px 20px;border:1px solid var(--border);background:var(--bg2);}
+  .source-footer-title{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px;}
+  .source-footer-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .source-chip{font-family:var(--font-head);font-size:11px;color:var(--text-muted);background:var(--bg3);border:1px solid var(--border);padding:4px 12px;}
+  .source-chip.kci{color:var(--accent3);border-color:rgba(51,232,154,0.3);background:rgba(51,232,154,0.05);}
+
+  /* ===== ADMIN ===== */
+  .admin-section{margin-bottom:36px;}
+  .admin-section-title{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:3px;color:var(--accent2);text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,85,85,0.25);}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+  .stat-card{background:var(--bg3);border:1px solid var(--border);padding:18px 16px;position:relative;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .stat-card.blue::before{background:var(--accent);}
+  .stat-card.red::before{background:var(--accent2);}
+  .stat-card.green::before{background:var(--accent3);}
+  .stat-card.yellow::before{background:var(--yellow);}
+  .stat-card-num{font-family:var(--font-head);font-size:30px;font-weight:800;color:#fff;}
+  .stat-card-lbl{font-family:var(--font-head);font-size:11px;color:var(--text-muted);margin-top:4px;}
+  .admin-member-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);padding:14px 18px;}
+  .admin-bar-track{flex:1;height:6px;background:var(--bg);border:1px solid var(--border);border-radius:1px;overflow:hidden;}
+  .admin-bar-fill{height:100%;background:var(--accent);transition:width .6s;border-radius:1px;}
+  .post-form{background:var(--bg3);border:1px solid var(--border);padding:22px;}
+  .post-form label{font-family:var(--font-head);font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:1px;display:block;margin-bottom:7px;}
+  .post-form select,.post-form textarea,.post-form input[type="text"]{width:100%;background:var(--bg2);border:1px solid var(--border);color:#fff;font-family:var(--font-body);font-size:14px;padding:10px 14px;margin-bottom:14px;outline:none;transition:border-color .2s;}
+  .post-form select:focus,.post-form textarea:focus,.post-form input[type="text"]:focus{border-color:var(--accent);}
+  .post-form select option{background:var(--bg2);}
+  .upload-zone{border:1px dashed var(--border2);padding:18px;text-align:center;cursor:pointer;margin-bottom:14px;transition:background .2s;}
+  .upload-zone:hover{background:rgba(79,163,255,0.05);}
+  .upload-zone-text{font-family:var(--font-head);font-size:11px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;}
+  .upload-zone-sub{font-family:var(--font-body);font-size:11px;color:var(--text-dim);margin-top:4px;}
+  .file-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .file-chip{font-family:var(--font-head);font-size:10px;color:var(--accent3);background:rgba(51,232,154,0.07);border:1px solid rgba(51,232,154,0.3);padding:3px 10px;display:flex;align-items:center;gap:6px;}
+  .file-chip-remove{cursor:pointer;color:var(--accent2);font-size:12px;line-height:1;}
+  .member-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .member-table th{text-align:left;padding:9px 12px;font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);}
+  .member-table td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);vertical-align:middle;}
+  .status-badge{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 9px;text-transform:uppercase;}
+  .status-pending{background:rgba(245,180,0,0.12);color:var(--yellow);border:1px solid rgba(245,180,0,0.35);}
+  .status-approved{background:rgba(51,232,154,0.12);color:var(--accent3);border:1px solid rgba(51,232,154,0.35);}
+  .status-denied{background:rgba(255,85,85,0.12);color:var(--accent2);border:1px solid rgba(255,85,85,0.35);}
+  .approve-btn{font-family:var(--font-head);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;border:1px solid rgba(51,232,154,0.4);background:rgba(51,232,154,0.07);color:var(--accent3);letter-spacing:1px;text-transform:uppercase;margin-right:4px;transition:all .15s;}
+  .approve-btn:hover{background:rgba(51,232,154,0.18);}
+  .deny-btn{font-family:var(--font-head);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;border:1px solid rgba(255,85,85,0.4);background:rgba(255,85,85,0.07);color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-right:4px;transition:all .15s;}
+  .deny-btn:hover{background:rgba(255,85,85,0.18);}
+  .delete-btn{font-family:var(--font-head);font-size:10px;font-weight:600;padding:4px 10px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;transition:all .15s;}
+  .delete-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+  /* 정보 검색 패널 */
+  .search-panel{background:var(--bg3);border:1px solid var(--border);padding:22px;margin-bottom:22px;}
+  .search-row{display:flex;gap:10px;margin-bottom:14px;}
+  .search-row input{flex:1;background:var(--bg2);border:1px solid var(--border);color:#fff;font-family:var(--font-body);font-size:14px;padding:10px 14px;outline:none;transition:border-color .2s;}
+  .search-row input:focus{border-color:var(--accent);}
+  .search-row button{background:var(--accent);border:none;color:#000;font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:2px;padding:10px 20px;cursor:pointer;white-space:nowrap;}
+  .search-row button:hover{background:#6fb8ff;}
+  .source-checks{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+  .source-check{display:flex;align-items:center;gap:5px;font-family:var(--font-head);font-size:11px;color:var(--text-muted);cursor:pointer;}
+  .source-check input{accent-color:var(--accent);}
+  .search-result-item{background:var(--bg2);border:1px solid var(--border);padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .search-result-item:hover{border-color:var(--border2);}
+  .search-result-info{flex:1;min-width:0;}
+  .search-result-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.4;}
+  .search-result-meta{font-family:var(--font-head);font-size:11px;color:var(--text-muted);margin-bottom:6px;}
+  .search-result-summary{font-family:var(--font-body);font-size:12px;color:var(--text-muted);line-height:1.6;}
+  .import-btn{font-family:var(--font-head);font-size:10px;font-weight:700;padding:5px 12px;cursor:pointer;border:1px solid rgba(79,163,255,0.4);background:rgba(79,163,255,0.07);color:var(--accent);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+  .import-btn:hover{background:rgba(79,163,255,0.18);}
+  .search-loading{text-align:center;padding:24px;font-family:var(--font-code);font-size:11px;color:var(--text-dim);letter-spacing:3px;}
+
+  .notif{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--accent);padding:12px 20px;font-family:var(--font-head);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:1px;z-index:200;display:none;animation:fadeIn .25s;max-width:340px;line-height:1.5;}
+  .notif.error{border-color:var(--accent2);color:var(--accent2);}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);}
+</style>
+</head>
+<body>
+
+<!-- ===== LANDING ===== -->
+<div id="screen-landing" class="screen active">
+  <div class="grid-bg"></div>
+  <div class="scan-line"></div>
+  <div class="drone-bg-wrap">
+    <svg viewBox="0 0 520 720" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+      <defs>
+        <radialGradient id="glow1" cx="50%" cy="44%" r="42%">
+          <stop offset="0%" stop-color="#4fa3ff" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#4fa3ff" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="blur1"><feGaussianBlur stdDeviation="3"/></filter>
+      </defs>
+      <ellipse cx="260" cy="320" rx="200" ry="160" fill="url(#glow1)" filter="url(#blur1)"/>
+      <rect x="215" y="285" width="90" height="62" rx="7" fill="#3a7fd4" opacity="0.95" stroke="#6ab4ff" stroke-width="1.2"/>
+      <rect x="230" y="305" width="60" height="32" rx="5" fill="#1e4e96" opacity="0.95" stroke="#4fa3ff" stroke-width="1"/>
+      <circle cx="260" cy="321" r="13" fill="#0d2a5a" stroke="#5bbfff" stroke-width="2" opacity="1"/>
+      <circle cx="260" cy="321" r="7" fill="#04132a" opacity="1"/>
+      <circle cx="257" cy="318" r="2.5" fill="#8ad4ff" opacity="0.7"/>
+      <circle cx="228" cy="292" r="3" fill="#ff5555" opacity="0.9"/>
+      <circle cx="292" cy="292" r="3" fill="#33e89a" opacity="0.9"/>
+      <line x1="218" y1="306" x2="88" y2="244" stroke="#5bbfff" stroke-width="3.5" opacity="0.9"/>
+      <line x1="302" y1="306" x2="432" y2="244" stroke="#5bbfff" stroke-width="3.5" opacity="0.9"/>
+      <line x1="218" y1="332" x2="88" y2="394" stroke="#5bbfff" stroke-width="3.5" opacity="0.9"/>
+      <line x1="302" y1="332" x2="432" y2="394" stroke="#5bbfff" stroke-width="3.5" opacity="0.9"/>
+      <circle cx="88" cy="244" r="16" fill="#1a3e7a" stroke="#5bbfff" stroke-width="2"/>
+      <circle cx="432" cy="244" r="16" fill="#1a3e7a" stroke="#5bbfff" stroke-width="2"/>
+      <circle cx="88" cy="394" r="16" fill="#1a3e7a" stroke="#5bbfff" stroke-width="2"/>
+      <circle cx="432" cy="394" r="16" fill="#1a3e7a" stroke="#5bbfff" stroke-width="2"/>
+      <circle cx="88" cy="244" r="6" fill="#4fa3ff" opacity="0.8"/>
+      <circle cx="432" cy="244" r="6" fill="#4fa3ff" opacity="0.8"/>
+      <circle cx="88" cy="394" r="6" fill="#4fa3ff" opacity="0.8"/>
+      <circle cx="432" cy="394" r="6" fill="#4fa3ff" opacity="0.8"/>
+      <ellipse cx="88" cy="244" rx="44" ry="6" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="88" cy="244" rx="6" ry="44" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="432" cy="244" rx="44" ry="6" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="432" cy="244" rx="6" ry="44" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="88" cy="394" rx="44" ry="6" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="88" cy="394" rx="6" ry="44" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="432" cy="394" rx="44" ry="6" fill="#7dcfff" opacity="0.5"/>
+      <ellipse cx="432" cy="394" rx="6" ry="44" fill="#7dcfff" opacity="0.5"/>
+      <line x1="232" y1="347" x2="216" y2="396" stroke="#5bbfff" stroke-width="2.5" opacity="0.8"/>
+      <line x1="288" y1="347" x2="304" y2="396" stroke="#5bbfff" stroke-width="2.5" opacity="0.8"/>
+      <line x1="202" y1="396" x2="235" y2="396" stroke="#5bbfff" stroke-width="2.5" opacity="0.8"/>
+      <line x1="286" y1="396" x2="318" y2="396" stroke="#5bbfff" stroke-width="2.5" opacity="0.8"/>
+      <rect x="252" y="396" width="16" height="20" rx="2" fill="#cc3333" opacity="0.9" stroke="#ff6666" stroke-width="1"/>
+      <polygon points="252,416 268,416 260,445" fill="#ff4444" opacity="0.85"/>
+      <rect x="255" y="400" width="10" height="4" rx="1" fill="#ff8888" opacity="0.7"/>
+      <rect x="0" y="262" width="520" height="1" fill="#4fa3ff" opacity="0.25"/>
+      <rect x="0" y="368" width="520" height="1" fill="#4fa3ff" opacity="0.18"/>
+      <circle cx="260" cy="500" r="36" fill="none" stroke="#ff5555" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.65"/>
+      <circle cx="260" cy="500" r="6" fill="#ff5555" opacity="0.7"/>
+      <line x1="240" y1="500" x2="220" y2="500" stroke="#ff5555" stroke-width="1.5" opacity="0.6"/>
+      <line x1="280" y1="500" x2="300" y2="500" stroke="#ff5555" stroke-width="1.5" opacity="0.6"/>
+      <line x1="260" y1="480" x2="260" y2="460" stroke="#ff5555" stroke-width="1.5" opacity="0.6"/>
+      <line x1="260" y1="520" x2="260" y2="540" stroke="#ff5555" stroke-width="1.5" opacity="0.6"/>
+      <text x="300" y="495" fill="#ff5555" font-size="9" font-family="Courier New" opacity="0.6">TGT·01</text>
+      <text x="300" y="508" fill="#ff5555" font-size="9" font-family="Courier New" opacity="0.5">ALT:42m</text>
+      <line x1="60" y1="180" x2="60" y2="560" stroke="#4fa3ff" stroke-width="0.5" stroke-dasharray="3 8" opacity="0.2"/>
+      <line x1="460" y1="180" x2="460" y2="560" stroke="#4fa3ff" stroke-width="0.5" stroke-dasharray="3 8" opacity="0.2"/>
+    </svg>
+    <div class="fade-left"></div>
+  </div>
+
+  <div class="landing-inner">
+    <div class="dcd-eyebrow">DRONE &amp; COUNTER-DRONE INTELLIGENCE</div>
+    <div class="dcd-logo">D<span class="small-d">c</span>D</div>
+    <div class="dcd-tagline">드론 &amp; 대드론 전문 정보 플랫폼</div>
+    <div class="landing-divider"><span>ACCESS CONTROL</span></div>
+    <div>
+      <button class="btn-primary" onclick="showScreen('login')">▶ 접속</button>
+      <button class="btn-secondary" onclick="showScreen('register')">신규 신청</button>
+    </div>
+    <div class="jbh2s-label"><span>jbh2s, Ltd.</span></div>
+  </div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="screen-login" class="screen">
+  <div class="reg-card">
+    <div class="reg-title">// ACCESS</div>
+    <div class="reg-subtitle">플랫폼 접속</div>
+    <div class="reg-desc">이메일과 접속 코드를 입력하세요. 관리자 접속은 코드란에 관리자 코드를 입력하면 됩니다.</div>
+    <label class="form-label">이메일</label>
+    <input type="email" class="form-input" id="login-email" placeholder="이메일 주소">
+    <label class="form-label">접속 코드</label>
+    <input type="text" class="form-input" id="login-code" placeholder="승인 후 발급된 코드 입력">
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <button class="btn-primary" style="flex:1;margin:0;" onclick="doLogin()">▶ 접속</button>
+      <button class="btn-primary" style="margin:0;background:rgba(255,85,85,0.2);color:var(--accent2);border:1px solid rgba(255,85,85,0.4);" onclick="doAdminLogin()">관리자</button>
+    </div>
+    <button class="btn-secondary" style="width:100%;margin:0;" onclick="showScreen('landing')">← 돌아가기</button>
+  </div>
+</div>
+
+<!-- ===== REGISTER ===== -->
+<div id="screen-register" class="screen">
+  <div class="reg-card">
+    <div class="reg-title">// NEW MEMBER</div>
+    <div class="reg-subtitle">접근 신청</div>
+    <div class="reg-desc">관련 분야 연구자, 개발자, 군·경찰·공무원을 위한 비공개 정보 플랫폼입니다.</div>
+    <div class="member-bar">
+      <div class="member-bar-track"><div class="member-bar-fill" id="reg-bar-fill"></div></div>
+      <div class="member-count" id="reg-count">15 / 1,000</div>
+    </div>
+    <label class="form-label">이름 (성명)</label>
+    <input type="text" class="form-input" id="reg-name" placeholder="홍길동">
+    <label class="form-label">이메일</label>
+    <input type="email" class="form-input" id="reg-email" placeholder="example@domain.com">
+    <label class="form-label">연락처</label>
+    <div class="form-row">
+      <div class="form-group">
+        <input type="text" class="form-input" id="reg-country" placeholder="+82" value="+82" style="margin-bottom:0;">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-input" id="reg-phone" placeholder="010-0000-0000" style="margin-bottom:0;">
+      </div>
+    </div>
+    <div style="height:18px;"></div>
+    <div class="form-note">
+      ※ 입력 정보는 관리자 검토 후 삭제 또는 승인 처리됩니다.<br>
+      ※ 승인 시 이메일로 접속 코드를 발송합니다.<br>
+      ※ 탈퇴 시 모든 개인정보가 즉시 삭제됩니다.
+    </div>
+    <button class="btn-primary" style="width:100%;margin:0 0 10px;" onclick="doRegister()">신청 제출</button>
+    <button class="btn-secondary" style="width:100%;margin:0;" onclick="showScreen('landing')">← 취소</button>
+  </div>
+</div>
+
+<!-- ===== PENDING ===== -->
+<div id="screen-pending" class="screen">
+  <div style="text-align:center;max-width:480px;padding:2rem;">
+    <div style="font-size:48px;margin-bottom:20px;">⏳</div>
+    <div class="pending-title">승인 대기 중</div>
+    <div class="pending-text" style="margin-bottom:24px;">신청이 접수되었습니다.<br><br>관리자 검토 후 등록하신 이메일로 접속 코드를 발송합니다.<br>일반적으로 1~3 영업일 내 처리됩니다.</div>
+    <button class="btn-secondary" onclick="showScreen('landing')">← 메인으로</button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="screen-app" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo" onclick="goHome()" style="cursor:pointer;" title="메인으로">D<span class="accent-d">c</span>D</div>
+    <div class="topbar-divider"></div>
+    <button class="nav-tab active" onclick="switchPanel('drone',this)">DRONE</button>
+    <button class="nav-tab" onclick="switchPanel('cdrone',this)">C-DRONE</button>
+    <button class="nav-tab" onclick="switchPanel('tactics',this)">TACTICS</button>
+    <button class="nav-tab" onclick="switchPanel('analysis',this)">ANALYSIS</button>
+    <button class="nav-tab" onclick="switchPanel('other',this)">OTHER</button>
+    <button class="nav-tab admin-tab" id="admin-tab" style="display:none;" onclick="switchPanel('admin',this)">⚙ ADMIN</button>
+    <div class="topbar-right">
+      <span class="user-badge" id="user-badge">MEMBER</span>
+      <button class="logout-btn" onclick="doWithdraw()" style="border-color:rgba(255,85,85,0.3);color:rgba(255,85,85,0.6);font-size:10px;">탈퇴</button>
+      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="app-content">
+
+    <!-- DRONE -->
+    <div id="panel-drone" class="panel active">
+      <div class="translate-bar">
+        <span class="translate-label">언어 :</span>
+        <button class="translate-btn active" onclick="setPanelLang('drone','ko',this)">한국어</button>
+        <button class="translate-btn" onclick="setPanelLang('drone','en',this)">English</button>
+        <span class="translate-status" id="tstat-drone"></span>
+      </div>
+      <div class="panel-header">
+        <div class="panel-tag">// DRONE INTELLIGENCE</div>
+        <div class="panel-title">드론 최신 정보</div>
+      </div>
+      <div class="article-list" id="articles-drone"></div>
+      <div class="source-footer">
+        <div class="source-footer-title">// 출처 기준</div>
+        <div class="source-footer-list">
+          <span class="source-chip kci">KCI 등재 학술지</span><span class="source-chip kci">SCI 등재 학술지</span>
+          <span class="source-chip">Defense News</span><span class="source-chip">DroneLife.com</span>
+          <span class="source-chip">The Aviationist</span><span class="source-chip">CSIS</span>
+          <span class="source-chip">C4ISRNET</span><span class="source-chip">The War Zone</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- C-DRONE -->
+    <div id="panel-cdrone" class="panel">
+      <div class="translate-bar">
+        <span class="translate-label">언어 :</span>
+        <button class="translate-btn active" onclick="setPanelLang('cdrone','ko',this)">한국어</button>
+        <button class="translate-btn" onclick="setPanelLang('cdrone','en',this)">English</button>
+        <span class="translate-status" id="tstat-cdrone"></span>
+      </div>
+      <div class="panel-header">
+        <div class="panel-tag" style="color:var(--accent2);">// COUNTER-DRONE INTELLIGENCE</div>
+        <div class="panel-title">대드론 최신 정보</div>
+      </div>
+      <div class="article-list" id="articles-cdrone"></div>
+      <div class="source-footer">
+        <div class="source-footer-title">// 출처 기준</div>
+        <div class="source-footer-list">
+          <span class="source-chip kci">KCI 등재 학술지</span><span class="source-chip kci">SCI 등재 학술지</span>
+          <span class="source-chip">C4ISRNET</span><span class="source-chip">CSIS</span>
+          <span class="source-chip">The War Zone</span><span class="source-chip">Defense News</span>
+          <span class="source-chip">IEEE Transactions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TACTICS -->
+    <div id="panel-tactics" class="panel">
+      <div class="translate-bar">
+        <span class="translate-label">언어 :</span>
+        <button class="translate-btn active" onclick="setPanelLang('tactics','ko',this)">한국어</button>
+        <button class="translate-btn" onclick="setPanelLang('tactics','en',this)">English</button>
+        <span class="translate-status" id="tstat-tactics"></span>
+      </div>
+      <div class="panel-header">
+        <div class="panel-tag" style="color:var(--accent3);">// TACTICAL ANALYSIS</div>
+        <div class="panel-title">전술 분석</div>
+      </div>
+      <div class="article-list" id="articles-tactics"></div>
+      <div class="source-footer">
+        <div class="source-footer-title">// 출처 기준</div>
+        <div class="source-footer-list">
+          <span class="source-chip kci">KCI 등재 학술지</span><span class="source-chip kci">SCI 등재 학술지</span>
+          <span class="source-chip">C4ISRNET</span><span class="source-chip">The War Zone</span>
+          <span class="source-chip">The Aviationist</span><span class="source-chip">CSIS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSIS (신규) -->
+    <div id="panel-analysis" class="panel">
+      <div class="translate-bar">
+        <span class="translate-label">언어 :</span>
+        <button class="translate-btn active" onclick="setPanelLang('analysis','ko',this)">한국어</button>
+        <button class="translate-btn" onclick="setPanelLang('analysis','en',this)">English</button>
+        <span class="translate-status" id="tstat-analysis"></span>
+      </div>
+      <div class="panel-header">
+        <div class="panel-tag" style="color:var(--purple);">// RESEARCH &amp; ANALYSIS</div>
+        <div class="panel-title">연구 · 분석</div>
+      </div>
+      <div class="article-list" id="articles-analysis"></div>
+      <div class="source-footer">
+        <div class="source-footer-title">// 출처 기준</div>
+        <div class="source-footer-list">
+          <span class="source-chip kci">KCI 등재 학술지</span><span class="source-chip kci">SCI 등재 학술지</span>
+          <span class="source-chip">CSIS</span><span class="source-chip">IEEE Transactions</span>
+          <span class="source-chip">Journal of Defense Studies</span><span class="source-chip">RAND Corp.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER -->
+    <div id="panel-other" class="panel">
+      <div class="translate-bar">
+        <span class="translate-label">언어 :</span>
+        <button class="translate-btn active" onclick="setPanelLang('other','ko',this)">한국어</button>
+        <button class="translate-btn" onclick="setPanelLang('other','en',this)">English</button>
+        <span class="translate-status" id="tstat-other"></span>
+      </div>
+      <div class="panel-header">
+        <div class="panel-tag" style="color:var(--yellow);">// OTHER</div>
+        <div class="panel-title">기타 정보</div>
+      </div>
+      <div class="article-list" id="articles-other"></div>
+      <div class="source-footer">
+        <div class="source-footer-title">// 출처 기준</div>
+        <div class="source-footer-list">
+          <span class="source-chip">Defense News</span><span class="source-chip">CSIS</span>
+          <span class="source-chip">C4ISRNET</span><span class="source-chip">DroneLife.com</span>
+          <span class="source-chip">The Aviationist</span><span class="source-chip">The War Zone</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="panel-admin" class="panel">
+      <div class="panel-header">
+        <div class="panel-tag" style="color:var(--accent2);">// ADMIN CONTROL</div>
+        <div class="panel-title">관리자 패널</div>
+      </div>
+
+      <!-- 회원 현황 바 -->
+      <div class="admin-member-bar">
+        <div style="flex-shrink:0;">
+          <div style="font-family:var(--font-head);font-size:10px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">회원 현황</div>
+          <div style="font-family:var(--font-head);font-size:20px;font-weight:800;color:#fff;"><span id="member-now">15</span> <span style="font-size:14px;color:var(--text-muted);font-weight:400;">/ 1,000</span></div>
+        </div>
+        <div class="admin-bar-track"><div class="admin-bar-fill" id="admin-bar-fill" style="width:1.5%;"></div></div>
+        <div style="flex-shrink:0;text-align:right;">
+          <div style="font-family:var(--font-head);font-size:10px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">잔여 슬롯</div>
+          <div style="font-family:var(--font-head);font-size:20px;font-weight:800;color:var(--accent);" id="remain-slots">985</div>
+        </div>
+      </div>
+
+      <!-- 통계 -->
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-card-num" id="total-members">15</div><div class="stat-card-lbl">총 회원</div></div>
+        <div class="stat-card yellow"><div class="stat-card-num" id="pending-count">3</div><div class="stat-card-lbl">승인 대기</div></div>
+        <div class="stat-card green"><div class="stat-card-num" id="total-posts">9</div><div class="stat-card-lbl">등록 콘텐츠</div></div>
+        <div class="stat-card red"><div class="stat-card-num" id="approved-count">2</div><div class="stat-card-lbl">승인 완료</div></div>
+      </div>
+
+      <!-- 정보 자동 검색·수집 -->
+      <div class="admin-section">
+        <div class="admin-section-title">// 정보 자동 검색 · 수집</div>
+        <div class="search-panel">
+          <div style="font-family:var(--font-head);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:10px;">검색 소스 선택</div>
+          <div class="source-checks">
+            <label class="source-check"><input type="checkbox" checked value="Defense News"> Defense News</label>
+            <label class="source-check"><input type="checkbox" checked value="CSIS"> CSIS</label>
+            <label class="source-check"><input type="checkbox" checked value="The Aviationist"> The Aviationist</label>
+            <label class="source-check"><input type="checkbox" checked value="DroneLife"> DroneLife.com</label>
+            <label class="source-check"><input type="checkbox" checked value="C4ISRNET"> C4ISRNET</label>
+            <label class="source-check"><input type="checkbox" checked value="The War Zone"> The War Zone</label>
+            <label class="source-check"><input type="checkbox" checked value="KCI"> KCI 학술지</label>
+            <label class="source-check"><input type="checkbox" checked value="SCI"> SCI 학술지</label>
+          </div>
+          <div class="search-row">
+            <input type="text" id="search-keyword" placeholder="검색 키워드 (예: drone swarm, counter-UAS, 안티드론)" value="drone anti-drone counter-UAS">
+            <button onclick="doAISearch()">🔍 검색</button>
+          </div>
+          <div id="search-results-area"></div>
+        </div>
+      </div>
+
+      <!-- 정보 등록 -->
+      <div class="admin-section">
+        <div class="admin-section-title">// 정보 등록 · 편집</div>
+        <div class="post-form">
+          <label>카테고리</label>
+          <select id="post-cat">
+            <option value="drone">DRONE</option>
+            <option value="cdrone">C-DRONE</option>
+            <option value="tactics">TACTICS</option>
+            <option value="analysis">ANALYSIS</option>
+            <option value="other">OTHER</option>
+          </select>
+          <label>출처</label>
+          <input type="text" id="post-source" placeholder="예: Defense News, KCI 한국항공우주학회지">
+          <label>원문 URL (선택)</label>
+          <input type="text" id="post-url" placeholder="https://...">
+          <label>대표 이미지 URL (선택 — 타이틀과 함께 노출)</label>
+          <input type="text" id="post-img" placeholder="https://... (jpg, png)">
+          <label>제목</label>
+          <input type="text" id="post-title" placeholder="정보 제목">
+          <label>내용</label>
+          <textarea id="post-body" rows="6" placeholder="관계자에게 제공할 정보 요약 또는 전문"></textarea>
+          <label>파일 첨부 (HWP · PDF · JPG · PPT · XLSX 등)</label>
+          <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" accept=".hwp,.pdf,.jpg,.jpeg,.png,.ppt,.pptx,.xlsx,.xls,.doc,.docx,.txt" multiple style="display:none;" onchange="handleFiles(this)">
+            <div class="upload-zone-text">클릭하여 파일 선택 (다중 선택 가능)</div>
+            <div class="upload-zone-sub">HWP · PDF · JPG · PNG · PPT · XLSX · DOC · TXT</div>
+          </div>
+          <div class="file-list" id="file-list"></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-primary" style="flex:1;margin:0;" onclick="publishPost()">▶ 게시</button>
+            <button class="btn-secondary" style="margin:0;" onclick="clearForm()">초기화</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 회원 관리 -->
+      <div class="admin-section">
+        <div class="admin-section-title">// 회원 관리</div>
+        <table class="member-table">
+          <thead><tr><th>이름</th><th>이메일</th><th>연락처</th><th>신청일</th><th>상태</th><th>조치</th></tr></thead>
+          <tbody id="member-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /.app-content -->
+</div><!-- /#screen-app -->
+
+<div class="notif" id="notif"></div>
+
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+'use strict';
+/* ================================================================
+   DcD Platform v3 — 완전 수정판
+   저장 오류 수정 내역:
+   1. Supabase 미설정 시 완벽한 localStorage fallback
+   2. 파일 업로드 — 파일명 sanitize (한글·공백·특수문자 처리)
+   3. publishPost async/await 에러 핸들링 강화
+   4. 회원 ID 타입 불일치(string vs number) 통일
+   5. Realtime 구독 중복 방지
+   6. DOMContentLoaded 이후 안전한 초기화 순서
+   ================================================================ */
+
+// ────────────────────────────────────────────────────────────────
+// ★ Supabase 설정 (배포 전 실제 값으로 교체)
+// ────────────────────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+
+// ────────────────────────────────────────────────────────────────
+// 전역 상태
+// ────────────────────────────────────────────────────────────────
+let sb          = null;   // Supabase client
+let realtimeSub = null;   // 구독 채널 참조
+let currentUser = null;
+let isAdmin     = false;
+let selectedFiles = [];
+const panelLang = {drone:'ko', cdrone:'ko', tactics:'ko', analysis:'ko', other:'ko'};
+
+const ADMIN_CODE  = 'admin2024';
+const USER_CODE   = '1234';
+const MAX_MEMBERS = 1000;
+const LS_ARTICLES = 'dcd_articles';
+const LS_MEMBERS  = 'dcd_members';
+
+// ────────────────────────────────────────────────────────────────
+// 기본 데이터 (Supabase 미연결 + localStorage 비어있을 때)
+// ────────────────────────────────────────────────────────────────
+const DEFAULT_ARTICLES = [
+  {id:'d1',cat:'drone',   title:'우크라이나 전장 FPV 드론 손실률 분석 — 2025년 1분기',   summary:'우크라이나 전장에서 FPV 드론의 작전 손실률이 급증하고 있으며, 전자전 재밍 및 AI 기반 탐지 시스템에 의한 격추 비율이 전체의 47%에 달하는 것으로 분석됐다. 특히 러시아군의 광대역 재머 배치 이후 소형 FPV 드론의 평균 작전 반경이 기존 대비 31% 감소한 것으로 나타났다.',   source:'Defense News',          url:'https://www.defensenews.com', img:'', created_at:'2025-05-01', attachments:[]},
+  {id:'d2',cat:'cdrone',  title:'RF 재밍 기반 대드론 시스템 성능 비교 연구',              summary:'KCI 등재 학술지에 게재된 연구에 따르면, 광대역 RF 재밍 시스템이 소형 상용 드론 대상 무력화율 91%를 기록했다. 주파수 호핑 방식의 드론에는 추가 대응 기술이 필요하다고 분석됐다.',                                                                                           source:'KCI (한국항공우주학회지)', url:'',                            img:'', created_at:'2025-04-30', attachments:[]},
+  {id:'d3',cat:'tactics', title:'드론 군집 전술의 진화 — 이란제 샤헤드 개량형 운용 분석', summary:'이란제 샤헤드 드론의 최신 개량형은 AI 기반 경로 최적화 기능을 탑재하여 기존 방공망 회피 성공률을 32% 향상시킨 것으로 보고됐다. C4ISRNET 및 The War Zone의 현장 보고를 종합 분석했다.',                                                                                   source:'C4ISRNET / The War Zone', url:'https://www.c4isrnet.com',     img:'', created_at:'2025-04-29', attachments:[]},
+  {id:'d4',cat:'drone',   title:'NATO 드론 상호운용성 표준화 동향 보고서',                summary:'CSIS 보고서에 따르면 NATO 회원국 간 드론 통신 프로토콜 표준화 작업이 2025년 하반기 완료 목표로 진행 중이다. Link-16 연동 및 암호화 드론 링크 규격이 핵심 의제로 논의되고 있다.',                                                                                           source:'CSIS',                    url:'https://www.csis.org',        img:'', created_at:'2025-04-28', attachments:[]},
+  {id:'d5',cat:'cdrone',  title:'레이저 기반 드론 요격 시스템 — SCI급 연구 동향',         summary:'SCI급 학술지에 게재된 최신 연구에서 고에너지 레이저(HEL) 시스템의 소형 드론 대상 교전 비용이 발당 평균 2.1달러로 미사일 대비 99.7% 절감 효과를 보이는 것으로 발표됐다.',                                                                                                    source:'SCI (IEEE Transactions)', url:'',                            img:'', created_at:'2025-04-27', attachments:[]},
+  {id:'d6',cat:'tactics', title:'드론 대드론 직접 교전 전술 사례 — 2024-25 분석',         summary:'드론이 드론을 요격하는 직접 교전 방식(Drone-on-drone)이 전장에서 보고되고 있으며, The Aviationist가 수집한 영상 분석에 따르면 성공률은 약 23%로 집계됐다.',                                                                                                               source:'The Aviationist',        url:'https://theaviationist.com',  img:'', created_at:'2025-04-26', attachments:[]},
+  {id:'d7',cat:'other',   title:'한국 드론작전사령부 창설 및 운용 계획 발표',              summary:'대한민국 합동참모본부는 드론작전사령부의 2025년 하반기 공식 창설 계획을 발표했으며, 초기 전력으로 자폭형 드론 및 정찰 드론 체계를 포함한 통합 운용 교리를 적용할 예정이다.',                                                                                             source:'Defense News Korea',     url:'',                            img:'', created_at:'2025-04-25', attachments:[]},
+  {id:'d8',cat:'drone',   title:'소형 상용 드론의 군사 개조 현황 — DroneLife 기술 분석',  summary:'DJI Matrice 시리즈를 포함한 소형 상용 드론의 군사 개조 사례가 급증하고 있다. DroneLife.com은 탑재 중량 개조, GPS 스푸핑 방어 모듈, 열화상 카메라 통합 사례를 중심으로 기술적 현황을 정리했다.',                                                                             source:'DroneLife.com',          url:'https://dronelife.com',       img:'', created_at:'2025-04-24', attachments:[]},
+  {id:'d9',cat:'analysis',title:'Counter-UAS 체계 효과성 분석 — 복합 위협 환경 대응 전략', summary:'RAND Corp. 및 SCI급 저널에 게재된 최신 연구를 종합하면, 단일 기술 기반 C-UAS 체계는 복합 위협 환경에서 효과성이 크게 저하된다. RF 재밍·레이저·운동에너지 무기의 계층적 통합 운용이 핵심 대안으로 제시됐다.',                                                           source:'RAND Corp. / SCI',       url:'',                            img:'', created_at:'2025-04-23', attachments:[]},
+];
+
+const DEFAULT_MEMBERS = [
+  {id:'m1',name:'김민준',  email:'minjun@kaist.ac.kr', phone:'+82 010-1234-5678', created_at:'2025-04-28', status:'approved'},
+  {id:'m2',name:'이서연',  email:'seoyeon@add.re.kr',  phone:'+82 010-9876-5432', created_at:'2025-04-29', status:'approved'},
+  {id:'m3',name:'박도훈',  email:'dohoon@uav-lab.com', phone:'+82 010-5555-0001', created_at:'2025-04-30', status:'pending'},
+  {id:'m4',name:'John Smith',email:'j.smith@csis.org', phone:'+1 202-555-0199',  created_at:'2025-05-01', status:'pending'},
+  {id:'m5',name:'이지안',  email:'jian@kookmin.ac.kr', phone:'+82 010-7777-2222', created_at:'2025-05-01', status:'pending'},
+];
+
+// ────────────────────────────────────────────────────────────────
+// localStorage 안전 헬퍼 (저장 오류 #1 수정)
+// ────────────────────────────────────────────────────────────────
+function lsGet(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) {
+    console.warn('[DcD] localStorage read error:', e);
+    return fallback;
+  }
+}
+function lsSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch(e) {
+    // QuotaExceededError 등 처리
+    console.warn('[DcD] localStorage write error:', e);
+    showNotif('로컬 저장 오류 — 브라우저 저장 공간을 확인하세요', true);
+    return false;
+  }
+}
+
+// 런타임 데이터 (localStorage 우선, 없으면 기본값)
+let articles = lsGet(LS_ARTICLES, DEFAULT_ARTICLES);
+let members  = lsGet(LS_MEMBERS,  DEFAULT_MEMBERS);
+
+// ────────────────────────────────────────────────────────────────
+// Supabase 초기화
+// ────────────────────────────────────────────────────────────────
+function initSupabase() {
+  try {
+    if (typeof window.supabase === 'undefined') return false;
+    if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) return false; // 미설정
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('[DcD] Supabase 연결됨');
+    return true;
+  } catch(e) {
+    console.warn('[DcD] Supabase 초기화 실패:', e);
+    return false;
+  }
+}
+
+// ────────────────────────────────────────────────────────────────
+// Supabase DB 함수들 (저장 오류 #2~5 수정)
+// ────────────────────────────────────────────────────────────────
+
+async function dbLoadArticles() {
+  if (!sb) return null;
+  try {
+    const {data, error} = await sb
+      .from('articles')
+      .select('*, attachments(*)')
+      .eq('status', 'published')
+      .order('created_at', {ascending: false});
+    if (error) throw error;
+    return data || [];
+  } catch(e) {
+    console.warn('[DcD] articles 로드 실패:', e.message);
+    return null;
+  }
+}
+
+async function dbLoadMembers() {
+  if (!sb) return null;
+  try {
+    const {data, error} = await sb
+      .from('members').select('*').order('created_at', {ascending: false});
+    if (error) throw error;
+    return data || [];
+  } catch(e) {
+    console.warn('[DcD] members 로드 실패:', e.message);
+    return null;
+  }
+}
+
+async function dbSaveArticle(d) {
+  if (!sb) return null;
+  try {
+    const {data, error} = await sb
+      .from('articles')
+      .insert([{cat:d.cat, title:d.title, summary:d.summary,
+                source:d.source, url:d.url||'', img:d.img||'', status:'published'}])
+      .select().single();
+    if (error) throw error;
+    return data;
+  } catch(e) {
+    console.warn('[DcD] article 저장 실패:', e.message);
+    showNotif('DB 저장 실패 — 로컬에 저장합니다', true);
+    return null;
+  }
+}
+
+async function dbDeleteArticle(id) {
+  if (!sb) return;
+  try {
+    const {error} = await sb.from('articles').delete().eq('id', id);
+    if (error) throw error;
+  } catch(e) { console.warn('[DcD] article 삭제 실패:', e.message); }
+}
+
+async function dbUpdateMember(id, status) {
+  if (!sb) return;
+  try {
+    const {error} = await sb.from('members').update({status}).eq('id', id);
+    if (error) throw error;
+  } catch(e) { console.warn('[DcD] member 상태 변경 실패:', e.message); }
+}
+
+async function dbDeleteMember(id) {
+  if (!sb) return;
+  try {
+    const {error} = await sb.from('members').delete().eq('id', id);
+    if (error) throw error;
+  } catch(e) { console.warn('[DcD] member 삭제 실패:', e.message); }
+}
+
+async function dbRegisterMember(d) {
+  if (!sb) return false;
+  try {
+    const {error} = await sb.from('members')
+      .insert([{name:d.name, email:d.email, phone:d.phone, status:'pending'}]);
+    if (error) throw error;
+    return true;
+  } catch(e) {
+    console.warn('[DcD] member 등록 실패:', e.message);
+    return false;
+  }
+}
+
+// 파일 업로드 — 파일명 sanitize (저장 오류 #3 수정: 한글/공백/특수문자)
+function sanitizeFilename(name) {
+  return name
+    .normalize('NFC')
+    .replace(/[^\w.\-]/g, '_')   // 영문·숫자·점·하이픈 외 전부 _
+    .replace(/_+/g, '_')
+    .toLowerCase();
+}
+
+async function dbUploadFiles(articleId, files) {
+  if (!sb || !files || !files.length) return [];
+  const results = [];
+  for (const f of files) {
+    try {
+      const safeName = sanitizeFilename(f.name);
+      const path = `${articleId}/${Date.now()}_${safeName}`;
+      const {error: upErr} = await sb.storage.from('attachments').upload(path, f, {
+        cacheControl: '3600',
+        upsert: false
+      });
+      if (upErr) { console.warn('[DcD] 파일 업로드 실패:', upErr.message); continue; }
+
+      const {data: urlData} = sb.storage.from('attachments').getPublicUrl(path);
+      const {error: insErr} = await sb.from('attachments').insert([{
+        article_id: articleId,
+        filename:   f.name,         // 원본 이름 표시용
+        file_url:   urlData.publicUrl,
+        file_type:  f.name.split('.').pop().toLowerCase()
+      }]);
+      if (insErr) { console.warn('[DcD] attachments insert 실패:', insErr.message); continue; }
+
+      results.push({filename: f.name, file_url: urlData.publicUrl,
+                    file_type: f.name.split('.').pop().toLowerCase()});
+    } catch(e) {
+      console.warn('[DcD] 파일 처리 오류:', e.message);
+    }
+  }
+  return results;
+}
+
+// ────────────────────────────────────────────────────────────────
+// 실시간 구독 (중복 방지 — 저장 오류 #4 수정)
+// ────────────────────────────────────────────────────────────────
+function subscribeRealtime() {
+  if (!sb) return;
+  if (realtimeSub) { sb.removeChannel(realtimeSub); realtimeSub = null; }
+
+  realtimeSub = sb.channel('dcd-realtime')
+    .on('postgres_changes', {event:'*', schema:'public', table:'articles'}, async () => {
+      const fresh = await dbLoadArticles();
+      if (fresh) { articles = fresh; lsSet(LS_ARTICLES, articles); renderArticles(); }
+      showNotif('🔴 실시간 업데이트');
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'attachments'}, async () => {
+      const fresh = await dbLoadArticles();
+      if (fresh) { articles = fresh; lsSet(LS_ARTICLES, articles); renderArticles(); }
+    })
+    .subscribe((status) => {
+      console.log('[DcD] Realtime:', status);
+    });
+}
+
+function unsubscribeRealtime() {
+  if (sb && realtimeSub) {
+    sb.removeChannel(realtimeSub);
+    realtimeSub = null;
+  }
+}
+
+// ────────────────────────────────────────────────────────────────
+// 데이터 로드
+// ────────────────────────────────────────────────────────────────
+async function loadArticles() {
+  const fresh = await dbLoadArticles();
+  if (fresh !== null) {
+    articles = fresh;
+    lsSet(LS_ARTICLES, articles);
+  }
+  renderArticles();
+}
+
+async function loadMembers() {
+  const fresh = await dbLoadMembers();
+  if (fresh !== null) {
+    members = fresh;
+    lsSet(LS_MEMBERS, members);
+  }
+  renderAdminMembers();
+}
+
+// ────────────────────────────────────────────────────────────────
+// 화면 전환
+// ────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function goHome() {
+  if (currentUser && !confirm('로그아웃하고 메인으로 이동하시겠습니까?')) return;
+  unsubscribeRealtime();
+  currentUser = null; isAdmin = false;
+  showScreen('landing');
+}
+
+function switchPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'admin') {
+    if (sb) loadMembers(); else renderAdminMembers();
+  }
+}
+
+// ────────────────────────────────────────────────────────────────
+// 파일 뷰어
+// ────────────────────────────────────────────────────────────────
+function getFileIcon(name) {
+  const ext = (name || '').split('.').pop().toLowerCase();
+  return {pdf:'📄',hwp:'📝',jpg:'🖼',jpeg:'🖼',png:'🖼',gif:'🖼',
+          ppt:'📊',pptx:'📊',xlsx:'📈',xls:'📈',doc:'📄',docx:'📄',txt:'📋'}[ext] || '📎';
+}
+
+function openFileViewer(url, filename) {
+  if (!url || url === '#') { showNotif('파일 URL이 없습니다', true); return; }
+  const ext = filename.split('.').pop().toLowerCase();
+  let body = '';
+  if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+    body = `<div style="text-align:center;padding:12px;">
+      <img src="${url}" style="max-width:100%;max-height:76vh;border:1px solid var(--border2);" alt="${filename}"
+           onerror="this.outerHTML='<p style=\\'color:var(--accent2);padding:40px;\\'>이미지를 불러올 수 없습니다.</p>'">
+    </div>`;
+  } else if (ext === 'pdf') {
+    body = `<iframe src="${url}" style="width:100%;height:76vh;border:none;background:#fff;"></iframe>`;
+  } else {
+    body = `<div style="text-align:center;padding:60px 20px;">
+      <div style="font-size:52px;margin-bottom:16px;">${getFileIcon(filename)}</div>
+      <div style="font-family:var(--font-head);font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;">${filename}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:28px;">
+        .${ext.toUpperCase()} 파일은 브라우저 내 직접 열기가 지원되지 않습니다.
+      </div>
+      <a href="${url}" download="${filename}"
+         style="display:inline-block;background:var(--accent);color:#000;font-family:var(--font-head);
+                font-size:13px;font-weight:700;letter-spacing:2px;padding:12px 36px;text-decoration:none;">
+        ⬇ 다운로드
+      </a>
+    </div>`;
+  }
+  document.getElementById('file-viewer-name').textContent = filename;
+  document.getElementById('file-viewer-content').innerHTML = body;
+  document.getElementById('file-viewer-overlay').style.display = 'flex';
+}
+
+function closeFileViewer() {
+  document.getElementById('file-viewer-overlay').style.display = 'none';
+  document.getElementById('file-viewer-content').innerHTML = '';
+}
+
+// ────────────────────────────────────────────────────────────────
+// 인증
+// ────────────────────────────────────────────────────────────────
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const code  = document.getElementById('login-code').value.trim();
+  if (!email || !code) { showNotif('이메일과 접속 코드를 입력하세요', true); return; }
+  if (code === USER_CODE) {
+    currentUser = email; isAdmin = false;
+    document.getElementById('user-badge').textContent = email.split('@')[0].toUpperCase();
+    document.getElementById('admin-tab').style.display = 'none';
+    showScreen('app');
+    if (sb) { loadArticles(); subscribeRealtime(); } else renderArticles();
+  } else {
+    showNotif('접속 코드가 올바르지 않습니다', true);
+  }
+}
+
+function doAdminLogin() {
+  const code = document.getElementById('login-code').value.trim();
+  if (code === ADMIN_CODE) {
+    currentUser = 'ADMIN'; isAdmin = true;
+    document.getElementById('user-badge').textContent = '◆ ADMIN';
+    document.getElementById('admin-tab').style.display = '';
+    showScreen('app');
+    if (sb) { loadArticles(); loadMembers(); subscribeRealtime(); }
+    else { renderArticles(); renderAdminMembers(); }
+  } else {
+    showNotif('관리자 코드가 올바르지 않습니다', true);
+  }
+}
+
+function doLogout() {
+  if (!confirm('로그아웃하시겠습니까?')) return;
+  unsubscribeRealtime();
+  currentUser = null; isAdmin = false;
+  showScreen('landing');
+}
+
+function doWithdraw() {
+  if (!confirm('탈퇴하면 회원 정보가 즉시 삭제됩니다.\n계속하시겠습니까?')) return;
+  const m = members.find(x => x.email === currentUser);
+  if (m) {
+    dbDeleteMember(m.id);
+    members = members.filter(x => x.id !== m.id);
+    lsSet(LS_MEMBERS, members);
+  }
+  unsubscribeRealtime();
+  currentUser = null; isAdmin = false;
+  showScreen('landing');
+  showNotif('탈퇴가 완료되었습니다.');
+}
+
+async function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  if (!name || !email || !phone) { showNotif('모든 항목을 입력하세요', true); return; }
+  if (members.length >= MAX_MEMBERS) { showNotif('회원 정원(1,000명)이 초과되었습니다', true); return; }
+  if (members.find(m => m.email === email)) { showNotif('이미 등록된 이메일입니다', true); return; }
+
+  const newMember = {
+    id: 'm' + Date.now(),
+    name, email,
+    phone: document.getElementById('reg-country').value + ' ' + phone,
+    created_at: new Date().toISOString().slice(0, 10),
+    status: 'pending'
+  };
+
+  const saved = await dbRegisterMember(newMember);
+  if (!saved) {
+    // localStorage fallback
+    members.push(newMember);
+    lsSet(LS_MEMBERS, members);
+  }
+  showScreen('pending');
+}
+
+// ────────────────────────────────────────────────────────────────
+// 번역 (AI)
+// ────────────────────────────────────────────────────────────────
+async function setPanelLang(panelId, lang, btn) {
+  btn.closest('.translate-bar').querySelectorAll('.translate-btn')
+     .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  panelLang[panelId] = lang;
+  const stat = document.getElementById('tstat-' + panelId);
+
+  if (lang === 'ko') {
+    if (stat) stat.textContent = '';
+    renderArticles(); return;
+  }
+
+  if (stat) stat.textContent = '번역 중...';
+  const targets = articles.filter(a => a.cat === panelId && !a._translated_en);
+
+  for (const a of targets) {
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 800,
+          messages: [{
+            role: 'user',
+            content: `다음을 영어로 번역해줘. JSON 형식만 출력:\n{"title":"...","summary":"..."}\n\n제목: ${a.title}\n내용: ${a.summary}`
+          }]
+        })
+      });
+      const d = await resp.json();
+      const text = d.content?.find(b => b.type === 'text')?.text || '';
+      const m = text.match(/\{[\s\S]*?\}/);
+      if (m) a._translated_en = JSON.parse(m[0]);
+    } catch(e) { console.warn('[DcD] 번역 오류:', e); }
+  }
+  renderArticles();
+  if (stat) stat.textContent = '(EN)';
+}
+
+// ────────────────────────────────────────────────────────────────
+// 아티클 렌더링
+// ────────────────────────────────────────────────────────────────
+function toggleArticle(id) {
+  const el = document.getElementById('art-' + id);
+  if (!el) return;
+  const wasOpen = el.classList.contains('expanded');
+  document.querySelectorAll('.article-item.expanded').forEach(e => e.classList.remove('expanded'));
+  if (!wasOpen) el.classList.add('expanded');
+}
+
+function renderArticles() {
+  ['drone','cdrone','tactics','analysis','other'].forEach(cat => {
+    const container = document.getElementById('articles-' + cat);
+    if (!container) return;
+    const filtered = articles.filter(a => a.cat === cat);
+    if (!filtered.length) {
+      container.innerHTML = '<div style="color:var(--text-dim);font-family:var(--font-head);font-size:12px;letter-spacing:3px;padding:48px 0;text-align:center;">// 등록된 정보 없음</div>';
+      return;
+    }
+    const lang = panelLang[cat] || 'ko';
+    container.innerHTML = filtered.map(a => {
+      const t     = (lang==='en' && a._translated_en) ? a._translated_en.title   : (a.title   || '');
+      const s     = (lang==='en' && a._translated_en) ? a._translated_en.summary : (a.summary || '');
+      const hasImg = a.img && a.img.trim();
+      const atts  = Array.isArray(a.attachments) ? a.attachments : [];
+      const date  = (a.created_at || '').slice(0, 10);
+      const safeId = String(a.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+      return `
+      <div class="article-item" id="art-${safeId}">
+        <div class="article-header" onclick="toggleArticle('${safeId}')">
+          <span class="article-badge badge-${a.cat}">${a.cat.toUpperCase()}</span>
+          <span class="article-title-txt">${t}</span>
+          <span class="article-source">${a.source || ''}</span>
+          <span class="article-date">${date}</span>
+          <span class="expand-arrow">▼</span>
+        </div>
+        <div class="article-body">
+          <div class="article-body-inner">
+            ${hasImg ? `<div class="article-body-img">
+              <img src="${a.img}" alt=""
+                   onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>[ NO IMAGE ]</div>'">
+            </div>` : ''}
+            <div class="article-body-main">
+              <div class="article-body-text">${s}</div>
+              ${a.url ? `<a class="article-source-url" href="${a.url}" target="_blank" rel="noopener">↗ 원문 보기: ${a.url}</a>` : ''}
+              ${atts.length ? `
+              <div class="attachments-area">
+                <div class="attachments-label">첨부 파일 — 클릭하여 바로 열기</div>
+                <div class="attachment-chips">
+                  ${atts.map(att => {
+                    const fn  = att.filename || att.file_name || String(att);
+                    const fu  = att.file_url || att.url || '#';
+                    const fus = fu.replace(/'/g, '%27');
+                    return `<span class="attachment-chip"
+                      onclick="openFileViewer('${fus}','${fn.replace(/'/g,"\\'")}')">
+                      ${getFileIcon(fn)} ${fn}
+                    </span>`;
+                  }).join('')}
+                </div>
+              </div>` : ''}
+              <div class="article-body-actions">
+                ${isAdmin ? `
+                  <button class="action-btn" onclick="editArticle('${a.id}')">수정</button>
+                  <button class="action-btn danger" onclick="deleteArticle('${a.id}')">삭제</button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+// ────────────────────────────────────────────────────────────────
+// 게시글 CRUD
+// ────────────────────────────────────────────────────────────────
+function editArticle(id) {
+  const a = articles.find(x => String(x.id) === String(id));
+  if (!a) { showNotif('게시글을 찾을 수 없습니다', true); return; }
+  document.getElementById('post-cat').value   = a.cat;
+  document.getElementById('post-source').value = a.source || '';
+  document.getElementById('post-url').value    = a.url    || '';
+  document.getElementById('post-img').value    = a.img    || '';
+  document.getElementById('post-title').value  = a.title;
+  document.getElementById('post-body').value   = a.summary || '';
+  // 원본 삭제 (수정 후 재등록)
+  articles = articles.filter(x => String(x.id) !== String(id));
+  dbDeleteArticle(id);
+  lsSet(LS_ARTICLES, articles);
+  renderArticles();
+  switchPanel('admin', document.getElementById('admin-tab'));
+  showNotif('수정 모드 — 편집 후 게시 버튼을 누르세요');
+}
+
+function deleteArticle(id) {
+  if (!confirm('이 게시글을 삭제하시겠습니까?')) return;
+  articles = articles.filter(x => String(x.id) !== String(id));
+  dbDeleteArticle(id);
+  lsSet(LS_ARTICLES, articles);
+  renderArticles();
+  document.getElementById('total-posts').textContent = articles.length;
+  showNotif('삭제 완료');
+}
+
+// ★ 핵심 수정: publishPost async 에러 핸들링 완전 재작성
+async function publishPost() {
+  const cat    = document.getElementById('post-cat').value;
+  const source = document.getElementById('post-source').value.trim();
+  const url    = document.getElementById('post-url').value.trim();
+  const img    = document.getElementById('post-img').value.trim();
+  const title  = document.getElementById('post-title').value.trim();
+  const body   = document.getElementById('post-body').value.trim();
+
+  if (!title)  { showNotif('제목을 입력하세요', true);  return; }
+  if (!body)   { showNotif('내용을 입력하세요', true);  return; }
+  if (!source) { showNotif('출처를 입력하세요', true);  return; }
+
+  // 버튼 비활성화 (중복 클릭 방지)
+  const submitBtn = document.querySelector('[onclick="publishPost()"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '저장 중...'; }
+
+  try {
+    const articleData = {cat, title, summary:body, source, url, img};
+    let dbResult = null;
+
+    // 1) DB 저장 시도
+    dbResult = await dbSaveArticle(articleData);
+
+    // 2) 로컬 객체 생성
+    const newArticle = dbResult ? {
+      ...dbResult,
+      attachments: []
+    } : {
+      id: 'l' + Date.now(),
+      cat, title, summary:body, source, url, img,
+      created_at: new Date().toISOString().slice(0, 10),
+      attachments: []
+    };
+
+    // 3) 파일 업로드 (DB 저장 성공 시에만)
+    if (dbResult && selectedFiles.length > 0) {
+      const uploaded = await dbUploadFiles(dbResult.id, selectedFiles);
+      newArticle.attachments = uploaded;
+    } else if (!dbResult && selectedFiles.length > 0) {
+      // 로컬 fallback — 파일명만 저장 (URL 없음)
+      newArticle.attachments = selectedFiles.map(f => ({
+        filename: f.name, file_url: '#', file_type: f.name.split('.').pop()
+      }));
+    }
+
+    // 4) 로컬 상태에 추가 + localStorage 저장
+    articles.unshift(newArticle);
+    const saved = lsSet(LS_ARTICLES, articles);
+    if (!saved && !dbResult) {
+      showNotif('저장 공간 부족 — 일부 데이터가 저장되지 않을 수 있습니다', true);
+    }
+
+    document.getElementById('total-posts').textContent = articles.length;
+    renderArticles();
+    clearForm();
+    showNotif(dbResult ? '✓ 게시 완료 — DB 저장됨' : '✓ 게시 완료 — 로컬 저장됨');
+
+  } catch(e) {
+    console.error('[DcD] publishPost 오류:', e);
+    showNotif('게시 중 오류가 발생했습니다: ' + (e.message || '알 수 없는 오류'), true);
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '▶ 게시'; }
+  }
+}
+
+function clearForm() {
+  ['post-source','post-url','post-img','post-title','post-body'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  selectedFiles = [];
+  const fl = document.getElementById('file-list');
+  if (fl) fl.innerHTML = '';
+  document.getElementById('post-cat').value = 'drone';
+}
+
+// ────────────────────────────────────────────────────────────────
+// 파일 선택 처리
+// ────────────────────────────────────────────────────────────────
+function handleFiles(input) {
+  if (!input.files) return;
+  Array.from(input.files).forEach(f => {
+    if (!selectedFiles.find(x => x.name === f.name)) selectedFiles.push(f);
+  });
+  renderFileList();
+  input.value = ''; // 같은 파일 재선택 가능하도록
+}
+
+function renderFileList() {
+  const list = document.getElementById('file-list');
+  if (!list) return;
+  list.innerHTML = selectedFiles.map((f, i) => `
+    <span class="file-chip">
+      ${getFileIcon(f.name)} ${f.name}
+      <span class="file-chip-remove" onclick="removeFile(${i})">✕</span>
+    </span>`).join('');
+}
+
+function removeFile(i) {
+  selectedFiles.splice(i, 1);
+  renderFileList();
+}
+
+// ────────────────────────────────────────────────────────────────
+// AI 정보 검색·수집
+// ────────────────────────────────────────────────────────────────
+async function doAISearch() {
+  const keyword = (document.getElementById('search-keyword')?.value || '').trim();
+  if (!keyword) { showNotif('검색 키워드를 입력하세요', true); return; }
+  const sources = Array.from(document.querySelectorAll('.source-checks input:checked')).map(c => c.value);
+  if (!sources.length) { showNotif('검색 소스를 1개 이상 선택하세요', true); return; }
+
+  const area = document.getElementById('search-results-area');
+  area.innerHTML = '<div class="search-loading">🔍 AI 검색 중... 잠시 기다려주세요</div>';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        tools: [{type:'web_search_20250305', name:'web_search'}],
+        messages: [{role:'user', content:
+          `${sources.join(', ')} 사이트에서 "${keyword}" 관련 최신 드론/대드론 정보 5건을 찾아 한국어로 정리해줘.\n` +
+          `반드시 아래 JSON 배열 형식으로만 응답:\n` +
+          `[{"title":"","source":"","url":"","summary":"","cat":"drone|cdrone|tactics|analysis|other"}]`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.filter(b => b.type==='text').map(b => b.text).join('') || '';
+    let items = [];
+    try { const m = text.match(/\[[\s\S]*?\]/); if (m) items = JSON.parse(m[0]); } catch(e){}
+    renderSearchResults(area, items.length ? items : getDemoSearchResults(keyword));
+  } catch(e) {
+    renderSearchResults(area, getDemoSearchResults(keyword));
+    showNotif('API 연결 필요 — 데모 결과 표시 중');
+  }
+}
+
+function renderSearchResults(area, items) {
+  area.innerHTML = items.map(item => {
+    const safeItem = JSON.stringify(item).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `
+    <div class="search-result-item">
+      <div class="search-result-info">
+        <div class="search-result-title">${item.title}</div>
+        <div class="search-result-meta">
+          <span class="article-badge badge-${item.cat||'drone'}" style="font-size:9px;padding:2px 7px;">
+            ${(item.cat||'drone').toUpperCase()}
+          </span>
+          &nbsp; ${item.source}
+          ${item.url ? `· <a href="${item.url}" target="_blank" style="color:var(--accent);font-size:10px;">원문↗</a>` : ''}
+        </div>
+        <div class="search-result-summary">${item.summary}</div>
+      </div>
+      <button class="import-btn" onclick="importSearchItem('${safeItem}')">가져오기</button>
+    </div>`;
+  }).join('');
+}
+
+function importSearchItem(jsonStr) {
+  try {
+    const item = JSON.parse(jsonStr);
+    document.getElementById('post-cat').value    = item.cat    || 'drone';
+    document.getElementById('post-source').value = item.source || '';
+    document.getElementById('post-url').value    = item.url    || '';
+    document.getElementById('post-title').value  = item.title  || '';
+    document.getElementById('post-body').value   = item.summary|| '';
+    document.getElementById('post-img').value    = '';
+    document.getElementById('post-title').scrollIntoView({behavior:'smooth', block:'center'});
+    showNotif('가져오기 완료 — 내용 확인 후 게시하세요');
+  } catch(e) { showNotif('가져오기 오류', true); }
+}
+
+function getDemoSearchResults(kw) {
+  return [
+    {title:`[${kw}] 미 공군, 자율 드론 편대 실전 배치 계획 발표`,source:'Defense News',url:'https://www.defensenews.com',summary:'미 공군이 2026년까지 AI 기반 자율 드론 편대를 유인기 보조 전력으로 실전 배치한다는 계획을 공개했다. 초기 전력은 XQ-58A Valkyrie 기반으로 구성될 예정이다.',cat:'drone'},
+    {title:`[${kw}] RF 재밍·레이저 복합 C-UAS 시스템 유럽 배치 현황`,source:'C4ISRNET',url:'https://www.c4isrnet.com',summary:'유럽 NATO 회원국들이 RF 재밍과 고에너지 레이저를 결합한 복합 Counter-UAS 체계의 현장 배치를 가속화하고 있다. 독일과 폴란드가 선도 배치국으로 확인됐다.',cat:'cdrone'},
+    {title:`[${kw}] 드론 스웜 전술 — 2025년 최신 전장 적용 사례 분석`,source:'The Aviationist',url:'https://theaviationist.com',summary:'2025년 1분기 전장 보고서를 종합하면, 드론 스웜 전술이 기존 방공망 포화를 목적으로 광범위하게 활용되고 있으며 탐지-요격 반응 시간이 핵심 취약점으로 부각됐다.',cat:'tactics'},
+    {title:`[${kw}] Counter-UAS 복합 체계 효과성 비교 분석`,source:'CSIS',url:'https://www.csis.org',summary:'CSIS 보고서는 군사용 ISR 드론 대비 상업용 드론 개조 시스템이 80% 이상의 비용을 절감하면서도 유사한 정찰 성능을 제공한다고 분석했다.',cat:'analysis'},
+    {title:`[${kw}] 한국 방산업체 대드론 시스템 수출 성과`,source:'Defense News Korea',url:'',summary:'국내 주요 방산업체들이 개발한 RF 재밍 및 AI 탐지 기반 대드론 시스템이 중동·동남아 시장에서 수출 계약을 체결했다.',cat:'other'},
+  ];
+}
+
+// ────────────────────────────────────────────────────────────────
+// 관리자 회원 관리
+// ────────────────────────────────────────────────────────────────
+function updateAdminStats() {
+  const total   = members.length;
+  const pending = members.filter(m => m.status === 'pending').length;
+  const approved= members.filter(m => m.status === 'approved').length;
+  const pct     = Math.min((total / MAX_MEMBERS) * 100, 100).toFixed(2);
+  document.getElementById('total-members').textContent  = total;
+  document.getElementById('pending-count').textContent  = pending;
+  document.getElementById('approved-count').textContent = approved;
+  document.getElementById('remain-slots').textContent   = (MAX_MEMBERS - total).toLocaleString();
+  document.getElementById('member-now').textContent     = total;
+  document.getElementById('admin-bar-fill').style.width = pct + '%';
+  document.getElementById('total-posts').textContent    = articles.length;
+}
+
+function renderAdminMembers() {
+  const tbody = document.getElementById('member-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = members.map(m => `
+    <tr>
+      <td style="color:#fff;font-weight:600;">${m.name}</td>
+      <td>${m.email}</td>
+      <td>${m.phone || ''}</td>
+      <td>${(m.created_at || '').slice(0,10)}</td>
+      <td><span class="status-badge status-${m.status}">
+        ${m.status==='pending'?'대기':m.status==='approved'?'승인':'거부'}
+      </span></td>
+      <td>
+        ${m.status === 'pending' ? `
+          <button class="approve-btn" onclick="approveMember('${m.id}')">승인</button>
+          <button class="deny-btn"    onclick="denyMember('${m.id}')">거부</button>
+        ` : ''}
+        <button class="delete-btn" onclick="deleteMember('${m.id}')">삭제</button>
+      </td>
+    </tr>`).join('');
+  updateAdminStats();
+}
+
+async function approveMember(id) {
+  const m = members.find(x => String(x.id) === String(id));
+  if (!m) return;
+  m.status = 'approved';
+  await dbUpdateMember(id, 'approved');
+  lsSet(LS_MEMBERS, members);
+  renderAdminMembers();
+  showNotif(m.name + ' 승인 완료');
+}
+
+async function denyMember(id) {
+  const m = members.find(x => String(x.id) === String(id));
+  if (!m) return;
+  m.status = 'denied';
+  await dbUpdateMember(id, 'denied');
+  lsSet(LS_MEMBERS, members);
+  renderAdminMembers();
+  showNotif(m.name + ' 거부 처리');
+}
+
+async function deleteMember(id) {
+  if (!confirm('회원을 강제 탈퇴시키겠습니까?\n회원 정보가 즉시 삭제됩니다.')) return;
+  members = members.filter(x => String(x.id) !== String(id));
+  await dbDeleteMember(id);
+  lsSet(LS_MEMBERS, members);
+  renderAdminMembers();
+  showNotif('회원 삭제 완료');
+}
+
+// ────────────────────────────────────────────────────────────────
+// 알림
+// ────────────────────────────────────────────────────────────────
+function showNotif(msg, isErr) {
+  const el = document.getElementById('notif');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'notif' + (isErr ? ' error' : '');
+  el.style.display = 'block';
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+// ────────────────────────────────────────────────────────────────
+// ★ 초기화 — DOMContentLoaded 후 안전하게 실행 (저장 오류 #5)
+// ────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Supabase 초기화 시도
+  const connected = initSupabase();
+  if (connected) {
+    console.log('[DcD] Supabase 연결 — 실시간 DB 모드');
+  } else {
+    console.log('[DcD] localStorage 모드 (Supabase 미연결)');
+  }
+
+  // 첫 렌더링
+  renderArticles();
+
+  // ESC → 파일 뷰어 닫기
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFileViewer(); });
+
+  // 파일 뷰어 오버레이 클릭 닫기
+  document.getElementById('file-viewer-overlay')
+    ?.addEventListener('click', e => { if (e.target.id === 'file-viewer-overlay') closeFileViewer(); });
+});
+</script>
+
+<!-- ===== 파일 뷰어 모달 ===== -->
+<div id="file-viewer-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:500;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="width:90%;max-width:860px;background:var(--bg2);border:1px solid var(--border2);display:flex;flex-direction:column;max-height:92vh;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <span id="file-viewer-name" style="font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--accent);letter-spacing:1px;"></span>
+      <button onclick="closeFileViewer()" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 12px;cursor:pointer;font-family:var(--font-head);font-size:11px;letter-spacing:1px;">✕ 닫기</button>
+    </div>
+    <div id="file-viewer-content" style="flex:1;overflow:auto;padding:12px;"></div>
+  </div>
+</div>
+
+<!-- Supabase CDN은 스크립트 위에 이미 로드됨 -->
+</body>
+</html>
